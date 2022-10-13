@@ -17,12 +17,22 @@ public class ActivitiesController : BaseApiController
     [HttpGet]
     public async Task<ActionResult<List<Activity>>> GetActivities()
     {
-        return await _context.Activities!.ToListAsync();
+        var rtn = await _context.Activities!.ToListAsync();
+
+        if (rtn is null)
+            return NotFound();
+
+        return Ok(rtn);
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<Activity>> GetActivity(Guid id)
     {        
-        return await _context.Activities!.FindAsync(id!);
+        var rtn = await _context.Activities!.FindAsync(id);
+
+        if (rtn is null)
+            return NotFound();
+
+        return Ok(rtn);
     }
 }
