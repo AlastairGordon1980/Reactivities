@@ -1,38 +1,40 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Persistence;
+﻿using Application.Activities;
 using Domain;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
 public class ActivitiesController : BaseApiController
 {
-    private readonly DataContext _context;
-
-    public ActivitiesController(DataContext context)
-    {
-        _context = context;
-    }
-
     [HttpGet]
     public async Task<ActionResult<List<Activity>>> GetActivities()
     {
-        var rtn = await _context.Activities!.ToListAsync();
-
-        if (rtn is null)
-            return NotFound();
-
-        return Ok(rtn);
+        return await Mediator.Send(new List.Query());
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<Activity>> GetActivity(Guid id)
-    {        
-        var rtn = await _context.Activities!.FindAsync(id);
+    {
+        return await Mediator.Send(new Details.Query { Id = id });
+    }
 
-        if (rtn is null)
-            return NotFound();
+    [HttpPost]
+    public async Task<IActionResult> CreateActivity(Activity activity)
+    {
+        return Ok(await Mediator.Send(new Create.Command { Activity = activity }));
+    }
 
-        return Ok(rtn);
+    [HttpPut("{id}")]
+    public async Task<IActionResult> EditActivity(Guid id, Activity activity)
+    {
+        activity.Id = id;
+
+        return Ok(await Mediator.Send(new Edit.Command { Activity = activity }));
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteActivity(Guid id)
+    {
+        return Ok(await Mediator.Send(new Delete.Command { Id = id }));
     }
 }
